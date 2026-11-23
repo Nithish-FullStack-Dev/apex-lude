@@ -1,0 +1,98 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Barlow Condensed", ui-sans-serif, system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+}
+
+:root {
+  --color-charcoal: #252b32;
+  --color-industrial-orange: #f28c28;
+  --color-light-grey: #f4f4f4;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-charcoal);
+    color: var(--color-light-grey);
+    font-family: var(--font-sans);
+    overflow-x: clip;
+  }
+
+  body {
+    background-color: var(--color-charcoal);
+    overflow-x: clip;
+  }
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono-tech {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Normalize legacy neutral utility colors to the industrial palette. */
+.text-white,
+.text-slate-100,
+.text-slate-200,
+.text-slate-300,
+.text-slate-400,
+.text-slate-500,
+.text-slate-600 {
+  color: var(--color-light-grey);
+}
+
+.placeholder\:text-slate-500::placeholder,
+.placeholder\:text-slate-600::placeholder {
+  color: var(--color-light-grey);
+  opacity: 0.65;
+}
+
+.hover\:text-white:hover,
+.hover\:text-slate-200:hover,
+.hover\:text-slate-300:hover {
+  color: var(--color-light-grey);
+}
+
+/* Subtle industrial grain overlay using pure SVG noise pattern */
+.bg-industrial-grain {
+  background-image: radial-gradient(
+    rgba(255, 255, 255, 0.04) 1px,
+    transparent 0
+  );
+  background-size: 28px 28px;
+}
+
+/* Thin technical hairline grid */
+.bg-tech-grid {
+  background-image:
+    linear-gradient(to right, rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Hide horizontal scrollbar in custom drag track while retaining accessibility */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto !important;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
