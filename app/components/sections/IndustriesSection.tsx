@@ -589,7 +589,7 @@ const IndustriesSection = () => {
           className="absolute inset-0 flex flex-col justify-center px-5 md:px-10 lg:px-16"
         >
           <div className="max-w-[1500px] mx-auto w-full">
-            <p className="mb-5 text-xs uppercase tracking-[0.25em] text-white/40">
+            <p className="mb-5 text-xs uppercase tracking-[0.25em] text-white/20">
               Cross-Sector Performance
             </p>
 
@@ -619,11 +619,11 @@ const IndustriesSection = () => {
           >
             <div className="mb-[18vh] flex items-start justify-between gap-10">
               <div>
-                <p className="mb-4 text-[10px] uppercase tracking-[0.2em] text-black/45">
+                <p className="mb-4 text-[15px] uppercase tracking-[0.2em] text-black/70">
                   Industries
                 </p>
 
-                <h2 className="max-w-5xl font-display text-[clamp(3rem,6.5vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em]">
+                <h2 className="max-w-5xl font-display text-[clamp(3rem,6.5vw,7rem)] font-bold leading-[0.88] tracking-[-0.05em] text-(--color-industrial-orange)">
                   <motion.span
                     style={{ opacity: timeline.lineOneOpacity }}
                     className="block"
@@ -639,7 +639,7 @@ const IndustriesSection = () => {
                 </h2>
               </div>
 
-              <p className="hidden max-w-[280px] pt-8 text-sm leading-6 text-black/50 lg:block">
+              <p className="hidden max-w-[280px] pt-8 text-md leading-6 text-black/70 lg:block">
                 Engineered solutions designed to protect performance across
                 demanding operating environments.
               </p>
@@ -715,11 +715,11 @@ const IndustryRow = ({ item, index, timeline, rowRef }: IndustryRowProps) => {
           {String(index + 1).padStart(2, "0")}
         </p>
 
-        <h3 className="font-display text-[clamp(2.4rem,4vw,5rem)] font-bold leading-[0.9] tracking-[-0.04em]">
+        <h3 className="font-display text-[clamp(2.4rem,4vw,5rem)] font-bold leading-[0.9] tracking-[-0.04em] text-(--color-industrial-orange)">
           {item.name}
         </h3>
 
-        <p className="mt-4 max-w-[420px] text-sm font-medium leading-6 text-black/45 lg:text-base">
+        <p className="mt-4 max-w-[420px] text-sm font-medium leading-6 text-black/45 lg:text-base font-mono">
           {item.subtitle}
         </p>
       </motion.div>
@@ -743,22 +743,22 @@ const IndustryRow = ({ item, index, timeline, rowRef }: IndustryRowProps) => {
       </div>
 
       <motion.div style={{ x: descriptionX }} className="md:pl-4">
-        <p className="max-w-[460px] text-base leading-7 text-black/55 lg:text-lg lg:leading-8">
+        <p className="max-w-[460px] text-base leading-7 text-black/70 lg:text-lg lg:leading-8 font-mono">
           {item.description}
         </p>
 
         <div className="mt-6 border-t border-black/10 pt-5">
-          <p className="mb-2 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/30">
+          <p className="mb-2 text-[9px] font-semibold uppercase font-mono tracking-[0.18em] text-black/30">
             Operating Focus
           </p>
 
-          <p className="max-w-[460px] text-xs font-medium leading-5 text-black/55 lg:text-sm lg:leading-6">
+          <p className="max-w-[460px] text-xs font-medium leading-5 text-black/55 lg:text-sm lg:leading-6 font-mono">
             {item.operatingFocus}
           </p>
         </div>
 
         <div className="mt-5">
-          <p className="mb-3 text-[9px] font-semibold uppercase tracking-[0.18em] text-black/30">
+          <p className="mb-3 text-[9px] font-mono font-semibold uppercase tracking-[0.18em] text-black/30">
             Recommended Lines
           </p>
 
@@ -766,7 +766,7 @@ const IndustryRow = ({ item, index, timeline, rowRef }: IndustryRowProps) => {
             {item.recommendedLines.map((line) => (
               <span
                 key={line}
-                className="rounded-full border border-black/15 px-3 py-1.5 text-[10px] font-medium text-black/55 lg:text-xs"
+                className="rounded-full border border-black/15 px-3 py-1.5 text-[10px] font-medium text-black/70 lg:text-xs font-mono"
               >
                 {line}
               </span>

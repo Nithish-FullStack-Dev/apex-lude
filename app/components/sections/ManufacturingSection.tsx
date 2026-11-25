@@ -1,132 +1,110 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { CheckCircle2 } from "lucide-react";
 
-interface ManufacturingSectionProps {
-  reducedMotion: boolean;
-}
-
-const PLANT_HIGHLIGHTS = [
+const COMPANY_STATS = [
   {
-    title: "Automated Blending Precision",
-    detail:
-      "Computer-controlled batching and stainless-steel blending vessels maintain repeatable additive-to-base-oil ratios while minimizing human error.",
+    number: 200,
+    label: "Happy Employees",
   },
   {
-    title: "In-House Laboratory Verification",
-    detail:
-      "Every blended batch undergoes viscosity, flash point, TBN, and thermal oxidation screening aligned with ASTM and SAE specifications.",
+    number: 25,
+    label: "Countries",
   },
   {
-    title: "Scheduled UAE & Export Dispatch",
-    detail:
-      "Strategic Ajman manufacturing adjacent to Hamriyah Free Zone supports dependable container, drum, and bulk dispatch schedules.",
+    number: 25,
+    label: "Years of Success",
   },
 ];
 
-export function ManufacturingSection({
-  reducedMotion,
-}: ManufacturingSectionProps) {
-  const sectionRef = useRef<HTMLElement | null>(null);
-  const [parallaxOffset, setParallaxOffset] = useState(0);
-  const [imgFailed, setImgFailed] = useState(false);
+function Counter({ target }: { target: number }) {
+  const ref = useRef<HTMLSpanElement>(null);
+  const [count, setCount] = useState(0);
+  const [started, setStarted] = useState(false);
 
   useEffect(() => {
-    if (reducedMotion) return;
-    const onScroll = () => {
-      const el = sectionRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const vh = window.innerHeight || 900;
-      const progress = Math.max(
-        -1,
-        Math.min(1, (vh / 2 - (rect.top + rect.height / 2)) / vh),
-      );
-      setParallaxOffset(progress * 26);
+    const element = ref.current;
+    if (!element) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting && !started) {
+          setStarted(true);
+        }
+      },
+      { threshold: 0.4 },
+    );
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [started]);
+
+  useEffect(() => {
+    if (!started) return;
+
+    const duration = 2000;
+    const startTime = performance.now();
+
+    let animationFrame: number;
+
+    const updateCounter = (currentTime: number) => {
+      const progress = Math.min((currentTime - startTime) / duration, 1);
+
+      // Smooth ease-out animation
+      const easedProgress = 1 - Math.pow(1 - progress, 4);
+
+      setCount(Math.floor(easedProgress * target));
+
+      if (progress < 1) {
+        animationFrame = requestAnimationFrame(updateCounter);
+      } else {
+        setCount(target);
+      }
     };
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, [reducedMotion]);
 
+    animationFrame = requestAnimationFrame(updateCounter);
+
+    return () => cancelAnimationFrame(animationFrame);
+  }, [started, target]);
+
+  return <span ref={ref}>{count}</span>;
+}
+
+export function ManufacturingSection() {
   return (
-    <section
-      ref={sectionRef}
-      className="border-t border-[var(--color-light-grey)]/10 bg-[var(--color-charcoal)] py-20 lg:py-28"
-    >
+    <section className="relative overflow-hidden border-t border-(--color-light-grey)/10 bg-(--color-charcoal) py-20 lg:py-28">
       <div className="mx-auto max-w-7xl px-4 sm:px-8">
-        <div className="grid items-stretch gap-10 lg:grid-cols-12 lg:gap-12">
-          {/* Visual Blending Facility Frame with Parallax */}
-          <div className="relative min-h-[340px] overflow-hidden border border-[var(--color-light-grey)]/10 bg-[var(--color-charcoal)] lg:col-span-7">
-            {imgFailed ? (
-              <div className="flex h-full min-h-[340px] items-center justify-center bg-gradient-to-br from-[var(--color-charcoal)] to-[var(--color-charcoal)] p-8">
-                <p className="font-display text-3xl font-bold text-white uppercase">
-                  Automated UAE Blending Facility
-                </p>
-              </div>
-            ) : (
-              <img
-                src="/assets/images/manufacturing_blending_plant_1795415831959.jpg"
-                alt="Apex Lubricants automated stainless steel blending plant in the United Arab Emirates"
-                referrerPolicy="no-referrer"
-                onError={() => setImgFailed(true)}
-                style={{
-                  transform: `translate3d(0, ${parallaxOffset}px, 0) scale(1.06)`,
-                }}
-                className="h-full w-full object-cover transition-transform duration-75 will-change-transform lg:h-full"
-              />
-            )}
-            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
+        {/* Section Heading */}
+        <div className="mb-14 text-center">
+          <p className="font-mono-tech text-xs font-medium tracking-[0.25em] text-(--color-industrial-orange) uppercase">
+            Our Achievements
+          </p>
 
-            {/* Clean unboxed technical overlay caption */}
-            <div className="absolute bottom-5 left-5 right-5 flex flex-wrap items-center justify-between gap-3 border-t border-white/20 pt-3 font-mono-tech text-xs text-slate-200">
-              <span>
-                Ajman Blending Facility · Opposite Hamriyah Free Zone 2
-              </span>
-              <span className="text-[var(--color-industrial-orange)]">
-                Automated Batch Control
-              </span>
-            </div>
-          </div>
+          <h2 className="mt-3 font-display text-3xl font-extrabold tracking-tight text-white uppercase sm:text-4xl lg:text-5xl">
+            Numbers That Define Us
+          </h2>
+        </div>
 
-          {/* Right Editorial Text */}
-          <div className="flex flex-col justify-center lg:col-span-5">
-            <p className="font-mono-tech text-xs font-medium tracking-[0.2em] text-[var(--color-industrial-orange)] uppercase">
-              Manufacturing &amp; Process Control
-            </p>
-            <h2
-              className="mt-3 font-display text-4xl font-extrabold leading-[0.98] tracking-tight text-white uppercase sm:text-5xl lg:text-6xl"
-              style={{ textWrap: "balance" }}
+        {/* Statistics */}
+        <div className="grid grid-cols-1 divide-y divide-white/10 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          {COMPANY_STATS.map((stat) => (
+            <div
+              key={stat.label}
+              className="group flex flex-col items-center justify-center px-6 py-10 text-center sm:py-8"
             >
-              Precision in Every{" "}
-              <span className="text-[var(--color-industrial-orange)]">
-                Drop.
-              </span>
-            </h2>
-            <p className="mt-5 text-base leading-relaxed text-slate-300">
-              APEX operates an ultra-modern automated blending system equipped
-              with specialized machinery to formulate automotive, 2T/4T,
-              hydraulic, grease, and industrial turbine lubricants without
-              compromise.
-            </p>
+              <h3 className="font-display text-6xl font-extrabold tracking-tight text-white transition-colors duration-300 group-hover:text-(--color-industrial-orange) sm:text-7xl lg:text-8xl">
+                <Counter target={stat.number} />
+                <span className="text-(--color-industrial-orange)">+</span>
+              </h3>
 
-            <div className="mt-8 space-y-5 border-t border-white/10 pt-6">
-              {PLANT_HIGHLIGHTS.map((item) => (
-                <div key={item.title} className="flex items-start gap-3">
-                  <CheckCircle2 className="mt-1 h-4 w-4 shrink-0 text-[var(--color-industrial-orange)]" />
-                  <div>
-                    <h3 className="text-sm font-semibold text-white">
-                      {item.title}
-                    </h3>
-                    <p className="mt-1 text-xs leading-relaxed text-slate-400">
-                      {item.detail}
-                    </p>
-                  </div>
-                </div>
-              ))}
+              <p className="mt-4 font-mono-tech text-sm font-medium tracking-[0.15em] text-slate-400 uppercase sm:text-base">
+                {stat.label}
+              </p>
+
+              <div className="mt-6 h-1 w-10 bg-(--color-industrial-orange) transition-all duration-300 group-hover:w-20" />
             </div>
-          </div>
+          ))}
         </div>
       </div>
     </section>

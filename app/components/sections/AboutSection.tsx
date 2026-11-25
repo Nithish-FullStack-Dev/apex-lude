@@ -1,5 +1,5 @@
-import { ShieldCheck } from 'lucide-react';
-import { APEX_CONTACT, CERTIFICATIONS } from '../../data/apexData';
+import { ShieldCheck } from "lucide-react";
+import { APEX_CONTACT, CERTIFICATIONS } from "../../data/apexData";
 
 export function AboutSection() {
   return (
@@ -15,17 +15,20 @@ export function AboutSection() {
             </p>
             <h2
               className="mt-3 font-display text-4xl font-extrabold leading-[0.98] tracking-tight text-white uppercase sm:text-5xl lg:text-6xl"
-              style={{ textWrap: 'balance' }}
+              style={{ textWrap: "balance" }}
             >
               Built on Quality.
               <br />
-              Driven by <span className="text-[var(--color-industrial-orange)]">Trust.</span>
+              Driven by{" "}
+              <span className="text-[var(--color-industrial-orange)]">
+                Trust.
+              </span>
             </h2>
-            <p className="mt-5 text-base leading-relaxed text-slate-300">
-              Headquartered in Dubai with dedicated automated manufacturing in Ajman,{' '}
-              {APEX_CONTACT.legalName} supplies automotive, commercial, and industrial lubricants
-              across the United Arab Emirates, Middle East, Africa, and international export
-              markets.
+            <p className="mt-5 text-base leading-relaxed text-slate-300 font-mono-tech">
+              Headquartered in Dubai with dedicated automated manufacturing in
+              Ajman, {APEX_CONTACT.legalName} supplies automotive, commercial,
+              and industrial lubricants across the United Arab Emirates, Middle
+              East, Africa, and international export markets.
             </p>
 
             <div className="mt-8 space-y-4 border-t border-white/10 pt-6 text-xs leading-relaxed text-slate-400">
@@ -33,7 +36,9 @@ export function AboutSection() {
                 <span className="font-mono-tech font-semibold text-white uppercase">
                   Corporate Office
                 </span>
-                <p className="mt-1">{APEX_CONTACT.dubaiOffice}</p>
+                <p className="mt-1 font-mono-tech">
+                  {APEX_CONTACT.dubaiOffice}
+                </p>
               </div>
               <div>
                 <span className="font-mono-tech font-semibold text-white uppercase">
@@ -61,7 +66,9 @@ export function AboutSection() {
                     {cert.title}
                   </h3>
                 </div>
-                <p className="mt-3 text-xs leading-relaxed text-slate-400">{cert.scope}</p>
+                <p className="mt-3 text-xs leading-relaxed text-slate-400">
+                  {cert.scope}
+                </p>
               </div>
             ))}
           </div>

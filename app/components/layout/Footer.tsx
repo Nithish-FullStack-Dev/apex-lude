@@ -22,19 +22,7 @@ export function Footer({ onSelectProduct }: FooterProps) {
           {/* Brand Summary */}
           <div className="lg:col-span-4">
             <a href="#hero" className="inline-flex items-center gap-2.5">
-              <svg viewBox="0 0 28 28" className="h-6 w-6" aria-hidden="true">
-                <polygon
-                  points="14,2 26,24 20,24 14,12 8,24 2,24"
-                  fill="#F28C28"
-                />
-                <polygon points="14,15 18,24 10,24" fill="#F28C28" />
-              </svg>
-              <span className="font-display text-2xl font-extrabold tracking-[0.14em] text-white">
-                APEX
-                <span className="text-[var(--color-industrial-orange)]">
-                  LUBES
-                </span>
-              </span>
+              <img src="/assets/images/logo.jpg" className="w-[50px]" />
             </a>
             <p className="mt-4 max-w-sm text-sm leading-relaxed text-slate-400">
               {APEX_CONTACT.legalName} — Precision-blended automotive,
@@ -55,7 +43,7 @@ export function Footer({ onSelectProduct }: FooterProps) {
             <h3 className="font-mono-tech text-xs font-medium tracking-wider text-white uppercase">
               Navigation
             </h3>
-            <ul className="mt-4 space-y-2.5 text-sm">
+            <ul className="mt-4 space-y-2.5 text-sm font-display">
               <li>
                 <a
                   href="#hero"
@@ -118,7 +106,7 @@ export function Footer({ onSelectProduct }: FooterProps) {
                   <a
                     href="#products"
                     onClick={() => onSelectProduct(cat.id)}
-                    className="text-slate-400 transition-colors hover:text-white"
+                    className="text-slate-400 transition-colors hover:text-white font-display"
                   >
                     {cat.title}
                   </a>
@@ -132,7 +120,7 @@ export function Footer({ onSelectProduct }: FooterProps) {
             <h3 className="font-mono-tech text-xs font-medium tracking-wider text-white uppercase">
               UAE Headquarters & Plant
             </h3>
-            <ul className="mt-4 space-y-3 text-xs leading-relaxed text-slate-400">
+            <ul className="mt-4 space-y-3 text-sm leading-relaxed text-slate-400 font-display">
               <li className="flex items-start gap-2.5">
                 <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-[var(--color-industrial-orange)]" />
                 <span>

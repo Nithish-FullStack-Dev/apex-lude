@@ -249,7 +249,7 @@ export function Navbar() {
                 font-semibold
                 uppercase
                 tracking-[0.3em]
-
+                font-display
                 sm:block
 
                 lg:text-[10px]
@@ -456,7 +456,7 @@ export function Navbar() {
               items-center
               gap-4
               text-white
-
+font-display
               sm:gap-5
             "
           >
@@ -525,20 +525,15 @@ export function Navbar() {
                   className="
                     relative
                     block
-                    font-serif
+                    font-display
                     text-[clamp(3rem,10vw,6rem)]
                     font-normal
                     uppercase
                     leading-[0.92]
                     tracking-[-0.055em]
                     text-white
-
                     transition-all
                     duration-500
-
-                    hover:translate-x-3
-                    hover:text-[var(--color-industrial-orange)]
-
                     sm:text-[clamp(4rem,8vw,7.5rem)]
 
                     lg:text-[clamp(4.6rem,7vw,8.5rem)]

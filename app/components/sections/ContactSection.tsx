@@ -79,13 +79,13 @@ export function ContactSection({
                 Moving.
               </span>
             </h2>
-            <p className="mt-5 max-w-lg text-base leading-relaxed text-slate-300">
+            <p className="mt-5 max-w-lg text-base font-mono leading-relaxed text-slate-300">
               Discover lubrication solutions designed for automotive, commercial
               and industrial performance. Reach our Dubai and Ajman engineering
               desk directly.
             </p>
 
-            <div className="mt-8 flex flex-wrap items-center gap-4">
+            <div className="mt-8 flex flex-wrap items-center gap-4 font-mono">
               <MagneticButton href="#products" variant="secondary">
                 <span>Explore Products</span>
               </MagneticButton>
@@ -171,7 +171,7 @@ export function ContactSection({
                 noValidate
                 className="mt-6 space-y-4"
               >
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-4 sm:grid-cols-2 font-mono">
                   <div>
                     <label
                       htmlFor="contact-name"

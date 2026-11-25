@@ -11,6 +11,7 @@ import { ManufacturingSection } from "./components/sections/ManufacturingSection
 import { ProductShowcaseSection } from "./components/sections/ProductShowcaseSection";
 import { PRODUCT_CATEGORIES } from "./data/apexData";
 import LubricantHeroExperience from "./components/sections/LubricantHeroExperience";
+import { CompanyValuesSection } from "./components/sections/CompanyValuesSection";
 
 export default function App() {
   const [reducedMotion, setReducedMotion] = useState(false);
@@ -61,17 +62,19 @@ export default function App() {
         <div className="relative z-10 bg-[var(--color-charcoal)]">
           <EngineStorySection reducedMotion={reducedMotion} />
 
-          <ProductShowcaseSection
+          {/* <ProductShowcaseSection
             selectedProductId={selectedProductId}
             onSelectProduct={setSelectedProductId}
             onRequestQuote={handleRequestQuote}
-          />
+          /> */}
 
           <IndustriesSection />
 
-          <ManufacturingSection reducedMotion={reducedMotion} />
+          <ManufacturingSection />
 
           <AboutSection />
+
+          <CompanyValuesSection />
 
           <ContactSection
             preselectedProductTitle={quoteProductTitle}
