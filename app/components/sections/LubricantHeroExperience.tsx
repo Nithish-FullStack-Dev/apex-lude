@@ -34,9 +34,8 @@ type IntroClock = {
 type Variant = "sharp" | "soft";
 
 type SceneRefs = {
-  /** 0 → 1 : hero → first carousel item (the "line up" move) */
   leadRef: MutableRefObject<number>;
-  /** 0 → products.length - 1 : which carousel item is in focus */
+
   cursorRef: MutableRefObject<number>;
   introClockRef: MutableRefObject<IntroClock>;
   pointerRef: MutableRefObject<PointerState>;
@@ -89,31 +88,18 @@ const products: Product[] = [
   },
 ];
 
-/* -------------------------------------------------------------------------- */
-/*  Tunables                                                                  */
-/* -------------------------------------------------------------------------- */
-
-/**
- * The pinned section is split into INTERVALS steps:
- *   step 1        : hero  → first carousel item (bottles line up)
- *   steps 2..N    : carousel item i → item i + 1
- * One wheel swipe / touch swipe / key press moves exactly one step.
- */
 const INTERVALS = products.length;
 
-/** Seconds a single step takes (bottles move + content out → gap → content in). */
 const STEP_DURATION = 1.3;
-/** Extra pause after a step before the next one is accepted. */
+
 const STEP_COOLDOWN = 0.25;
-/** How far (px) the text panels travel while leaving / arriving. */
+
 const PANEL_TRAVEL = 70;
 
-/** Blur (px) applied to the bottles that are not in focus. */
 const SOFT_BLUR_PX = 3.5;
-/** Render scale of the blurred layer (lower = cheaper + softer). */
+
 const SOFT_DPR = 0.75;
 
-/** Bottle intro: seconds of delay per bottle (center first, then outwards). */
 const INTRO_DELAYS = [0, 0.22, 0.22, 0.44, 0.44];
 const INTRO_DURATION = 1.8;
 const CAMERA_INTRO_DURATION = 2.8;
@@ -126,10 +112,6 @@ const CAMERA = {
   near: 0.1,
   far: 100,
 };
-
-/* -------------------------------------------------------------------------- */
-/*  Helpers                                                                   */
-/* -------------------------------------------------------------------------- */
 
 const clamp01 = (value: number) => Math.min(1, Math.max(0, value));
 
@@ -148,10 +130,6 @@ const easeOutBack = (t: number, overshoot = 1.3) => {
   return 1 + c3 * Math.pow(t - 1, 3) + overshoot * Math.pow(t - 1, 2);
 };
 
-/* -------------------------------------------------------------------------- */
-/*  3D                                                                        */
-/* -------------------------------------------------------------------------- */
-
 function OilModel({
   product,
   index,
@@ -168,9 +146,8 @@ function OilModel({
   const groupRef = useRef<THREE.Group>(null);
   const { scene } = useGLTF(product.model);
   const screenWidth = useThree((state) => state.size.width);
+  const screenHeight = useThree((state) => state.size.height);
 
-  // Damped values live here so the intro offsets can be added on top
-  // without being smoothed away.
   const motion = useRef({
     ready: false,
     x: 0,
@@ -243,8 +220,7 @@ function OilModel({
     const lead = leadRef.current;
     const cursor = cursorRef.current;
     const isMobile = screenWidth < 768;
-
-    /* ------------------------------ intro clock ------------------------------ */
+    const isShortMobile = isMobile && screenHeight < 720;
 
     const clock = introClockRef.current;
     if (clock.start === null) clock.start = performance.now();
@@ -254,38 +230,48 @@ function OilModel({
       (seconds - (INTRO_DELAYS[index] ?? 0.44)) / INTRO_DURATION,
     );
 
-    /* ------------------------------- hero layout ------------------------------ */
-
     const heroXDesktop = [0, -1.55, 1.55, -2.75, 2.75];
-    const heroXMobile = [0, -0.76, 0.76, -1.35, 1.35];
+    const heroXMobile = [0, -0.46, 0.46, -0.86, 0.86];
 
     const heroX = isMobile
-      ? (heroXMobile[index] ?? (index - 2) * 0.5)
+      ? (heroXMobile[index] ?? (index - 2) * 0.34)
       : (heroXDesktop[index] ?? (index - 2) * 0.85);
 
-    const heroY = isMobile ? -0.9 : -1.05;
-    const heroZ = index === 0 ? 0.65 : index <= 2 ? 0.15 : -0.35;
+    const heroY = isMobile ? (isShortMobile ? -0.48 : -0.58) : -1.05;
+    const heroZ = isMobile
+      ? index === 0
+        ? 0.35
+        : index <= 2
+          ? 0
+          : -0.3
+      : index === 0
+        ? 0.65
+        : index <= 2
+          ? 0.15
+          : -0.35;
 
     const heroScales = [1.13, 0.98, 0.98, 0.84, 0.84];
-    const heroScale = (heroScales[index] ?? 0.8) * (isMobile ? 0.82 : 1);
+    const mobileHeroScale = isShortMobile ? 0.49 : 0.55;
+    const heroScale =
+      (heroScales[index] ?? 0.8) * (isMobile ? mobileHeroScale : 1);
 
-    /* ------------------------------ queue ("line up") ------------------------------ */
-
-    const queueX = isMobile ? index * 0.16 : index * 0.42;
-    const queueY = (isMobile ? -0.85 : -0.72) + Math.min(index, 4) * 0.045;
-    const queueZ = 0.5 - index * (isMobile ? 0.72 : 0.9);
-    const queueScale = (isMobile ? 0.91 : 1.06) * Math.pow(0.89, index);
+    const queueX = isMobile ? -0.2 + index * 0.13 : index * 0.42;
+    const queueY = isMobile
+      ? (isShortMobile ? 0.84 : 0.98) + Math.min(index, 4) * 0.025
+      : -0.72 + Math.min(index, 4) * 0.045;
+    const queueZ = 0.5 - index * (isMobile ? 0.68 : 0.9);
+    const queueScale =
+      (isMobile ? (isShortMobile ? 0.62 : 0.68) : 1.06) *
+      Math.pow(isMobile ? 0.86 : 0.89, index);
 
     const queueTransition = smooth(0.1, 0.7, lead);
     const carouselBlend = smooth(0.66, 1, lead);
 
-    /* -------------------------------- carousel -------------------------------- */
-
     const relative = index - cursor;
 
-    const baseScale = isMobile ? 1 : 1.18;
-    const activeX = isMobile ? -0.62 : -2.25;
-    const activeY = isMobile ? -0.72 : -0.6;
+    const baseScale = isMobile ? (isShortMobile ? 0.66 : 0.72) : 1.18;
+    const activeX = isMobile ? 0 : -2.25;
+    const activeY = isMobile ? (isShortMobile ? 1.03 : 1.16) : -0.6;
 
     let carouselX: number;
     let carouselY: number;
@@ -299,35 +285,33 @@ function OilModel({
 
       carouselX =
         activeX +
-        firstQueueStep * (isMobile ? 1.08 : 2.25) +
-        deeperStep * (isMobile ? 0.24 : 0.55);
+        firstQueueStep * (isMobile ? 0.62 : 2.25) +
+        deeperStep * (isMobile ? 0.16 : 0.55);
 
-      carouselY = activeY + Math.min(relative, 4) * (isMobile ? 0.025 : 0.045);
+      carouselY = activeY + Math.min(relative, 4) * (isMobile ? 0.015 : 0.045);
 
       carouselZ =
         0.65 -
-        firstQueueStep * (isMobile ? 1.25 : 1.5) -
-        deeperStep * (isMobile ? 0.6 : 0.8);
+        firstQueueStep * (isMobile ? 1.05 : 1.5) -
+        deeperStep * (isMobile ? 0.5 : 0.8);
 
-      // current one is clearly the biggest, the rest step down
-      carouselScale = baseScale * Math.pow(0.82, relative);
-
-      // the rest are low opacity
-      carouselOpacity = Math.max(0.1, Math.pow(0.4, relative));
+      carouselScale = baseScale * Math.pow(isMobile ? 0.78 : 0.82, relative);
+      carouselOpacity = Math.max(
+        isMobile ? 0.07 : 0.1,
+        Math.pow(0.4, relative),
+      );
     } else {
       const exited = Math.abs(relative);
 
-      carouselX = activeX + relative * (isMobile ? 1.15 : 2.05);
-      carouselY = activeY - Math.min(exited, 1) * 0.1;
+      carouselX = activeX + relative * (isMobile ? 0.78 : 2.05);
+      carouselY = activeY - Math.min(exited, 1) * (isMobile ? 0.04 : 0.1);
       carouselZ = 0.65 - exited * 0.3;
-      carouselScale = baseScale * (1 - Math.min(exited, 1) * 0.12);
+      carouselScale =
+        baseScale * (1 - Math.min(exited, 1) * (isMobile ? 0.08 : 0.12));
       carouselOpacity = Math.max(0, 1 - exited * 1.7);
     }
 
-    // 1 = perfectly in focus, 0 = fully soft (blurred layer)
     const carouselFocus = 1 - smooth(0.05, 0.75, Math.abs(relative));
-
-    /* --------------------------------- targets --------------------------------- */
 
     let targetX = mix(heroX, queueX, queueTransition);
     let targetY = mix(heroY, queueY, queueTransition);
@@ -345,39 +329,33 @@ function OilModel({
     const pointerX = pointerRef.current.x;
     const pointerY = pointerRef.current.y;
 
-    targetX += pointerX * 0.11 * activeStrength;
-    targetY += pointerY * 0.045 * activeStrength;
+    targetX += pointerX * (isMobile ? 0.035 : 0.11) * activeStrength;
+    targetY += pointerY * (isMobile ? 0.018 : 0.045) * activeStrength;
 
     const heroRotation = index === 0 ? 0 : heroX < 0 ? 0.11 : -0.11;
     const queueRotation = index * 0.018;
 
     let rotationY = mix(heroRotation, queueRotation, queueTransition);
     rotationY = mix(rotationY, MODEL_YAW + relative * -0.025, carouselBlend);
-    rotationY += pointerX * 0.13 * activeStrength;
+    rotationY += pointerX * (isMobile ? 0.045 : 0.13) * activeStrength;
 
-    const rotationX = pointerY * 0.055 * activeStrength;
+    const rotationX = pointerY * (isMobile ? 0.02 : 0.055) * activeStrength;
 
     targetY +=
       Math.sin(state.clock.elapsedTime * 1.15 + index * 0.65) *
       0.018 *
       activeStrength;
 
-    /* ------------------------------ intro (one-off) ------------------------------ */
-    // Bottles rise from below the screen, spin ~1.5 turns, fan out from the
-    // centre, overshoot a little and settle. Center bottle first.
-
     const rise = 1 - easeOutBack(introT);
     const fan = 1 - easeOutCubic(introT);
     const spinSign = index % 2 === 0 ? 1 : -1;
 
-    const introY = -3.6 * rise;
+    const introY = (isMobile ? -2.5 : -3.6) * rise;
     const introX = -heroX * 0.9 * fan;
     const introSpin = spinSign * Math.PI * 3 * (1 - easeOutQuart(introT));
     const introTilt = -spinSign * 0.3 * fan;
     const introScale = 0.6 + 0.4 * easeOutCubic(introT);
     const introOpacity = smooth(0, 0.3, introT);
-
-    /* --------------------------------- damping --------------------------------- */
 
     if (!m.ready) {
       m.x = targetX;
@@ -405,15 +383,12 @@ function OilModel({
     group.scale.setScalar(Math.max(m.scale * introScale, 0.001));
     group.rotation.set(m.rx, m.ry + introSpin, introTilt);
 
-    /* ---------------------- opacity + focus (sharp / soft) ---------------------- */
-
     const targetOpacity = introOpacity * mix(1, carouselOpacity, carouselBlend);
     const targetFocus = mix(1, carouselFocus, carouselBlend);
 
     m.opacity = THREE.MathUtils.damp(m.opacity, targetOpacity, 10, delta);
     m.focus = THREE.MathUtils.damp(m.focus, targetFocus, 8, delta);
 
-    // The sharp layer shows the in-focus bottle, the blurred layer shows the rest.
     const weight =
       variant === "sharp" ? m.opacity * m.focus : m.opacity * (1 - m.focus);
 
@@ -441,7 +416,6 @@ function ProductScene({
 }: SceneRefs & { variant: Variant }) {
   const camera = useThree((state) => state.camera);
 
-  // Slow dolly-in that plays together with the bottle intro.
   useFrame(() => {
     const clock = introClockRef.current;
 
@@ -500,10 +474,6 @@ function ProductScene({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Section                                                                   */
-/* -------------------------------------------------------------------------- */
-
 export default function LubricantHeroExperience() {
   const sectionRef = useRef<HTMLElement>(null);
   const heroCopyRef = useRef<HTMLDivElement>(null);
@@ -520,8 +490,6 @@ export default function LubricantHeroExperience() {
   });
 
   const panelRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  /* ---------------------------- pointer parallax ---------------------------- */
 
   useEffect(() => {
     const handlePointerMove = (event: PointerEvent) => {
@@ -543,8 +511,6 @@ export default function LubricantHeroExperience() {
     };
   }, []);
 
-  /* ------------------------ title: always fits the screen ------------------------ */
-
   useEffect(() => {
     const el = titleRef.current;
     if (!el) return;
@@ -565,18 +531,14 @@ export default function LubricantHeroExperience() {
     return () => window.removeEventListener("resize", fit);
   }, []);
 
-  /* ------------------ pinned, step-locked scroll experience ------------------ */
-
   useEffect(() => {
     const section = sectionRef.current;
     if (!section) return;
 
-    /* ---- scroll position -> visuals ---- */
-
     const render = (progress: number) => {
-      const pos = clamp01(progress) * INTERVALS; // 0 … INTERVALS
-      const lead = clamp01(pos); // hero → first item
-      const cursor = Math.max(0, pos - 1); // carousel item in focus
+      const pos = clamp01(progress) * INTERVALS;
+      const lead = clamp01(pos);
+      const cursor = Math.max(0, pos - 1);
 
       leadRef.current = lead;
       cursorRef.current = cursor;
@@ -600,24 +562,20 @@ export default function LubricantHeroExperience() {
         });
       }
 
-      // The first panel waits until the hero text is gone.
       const reveal = smooth(0.62, 0.97, lead);
 
       panelRefs.current.forEach((panel, index) => {
         if (!panel) return;
 
-        const local = cursor - index; // > 0 : leaving, <= 0 : arriving / current
+        const local = cursor - index;
 
         let visibility: number;
         let direction: 1 | -1;
 
         if (local > 0) {
-          // old content leaves first …
           visibility = local >= 1 ? 0 : 1 - smooth(0, 0.3, local);
           direction = -1;
         } else {
-          // … then there is a short empty gap, then new content arrives
-          // and stays fully visible for the rest of the step.
           const arriving = 1 + local;
           visibility = arriving <= 0 ? 0 : smooth(0.62, 0.97, arriving);
           direction = 1;
@@ -638,8 +596,6 @@ export default function LubricantHeroExperience() {
         });
       });
     };
-
-    /* ---- step controller state ---- */
 
     let st!: ScrollTrigger;
     let locked = false;
@@ -678,7 +634,6 @@ export default function LubricantHeroExperience() {
       const stepSpan = Math.max((st.end - st.start) / INTERVALS, 1);
       const distance = Math.abs(targetY - window.scrollY);
 
-      // full step = STEP_DURATION, small nudges are quicker
       const duration = Math.max(
         0.35,
         STEP_DURATION * Math.min(1, distance / stepSpan),
@@ -706,8 +661,6 @@ export default function LubricantHeroExperience() {
       });
     };
 
-    // If the person drags the scrollbar etc. and stops between two steps,
-    // glide to the nearest one so a half-finished state never stays on screen.
     const settle = () => {
       if (locked || !inRange()) return;
 
@@ -723,11 +676,6 @@ export default function LubricantHeroExperience() {
       settleTimer = window.setTimeout(settle, 180);
     };
 
-    /**
-     * "acted"   -> we started a step (swallow the native event)
-     * "swallow" -> busy / tail of the previous gesture (swallow the native event)
-     * "release" -> already at the first / last step: let the page scroll on
-     */
     const handleIntent = (
       dir: 1 | -1,
       canAct: boolean,
@@ -742,8 +690,6 @@ export default function LubricantHeroExperience() {
       goTo(stop + dir);
       return "acted";
     };
-
-    /* ---- the pin itself ---- */
 
     st = ScrollTrigger.create({
       trigger: section,
@@ -764,15 +710,13 @@ export default function LubricantHeroExperience() {
 
     render(st.progress);
 
-    /* ---- input: wheel / trackpad ---- */
-
     let lastWheelAt = 0;
     let lastAbs = 0;
     let accumulated = 0;
     let consumed = false;
 
     const onWheel = (event: WheelEvent) => {
-      if (event.ctrlKey) return; // pinch zoom
+      if (event.ctrlKey) return;
 
       const now = performance.now();
       const abs =
@@ -783,8 +727,6 @@ export default function LubricantHeroExperience() {
             ? window.innerHeight
             : 1);
 
-      // A new gesture = a pause, a sudden stronger swipe, or a fresh mouse notch.
-      // Trackpad inertia (decaying deltas) never counts as new.
       const newGesture =
         now - lastWheelAt > 90 ||
         abs > lastAbs * 1.6 + 8 ||
@@ -801,7 +743,6 @@ export default function LubricantHeroExperience() {
       accumulated += abs;
 
       if (!inRange()) {
-        // a gesture that is still running when we arrive must not skip steps
         consumed = true;
         return;
       }
@@ -816,8 +757,6 @@ export default function LubricantHeroExperience() {
       if (event.cancelable) event.preventDefault();
       if (result === "acted") consumed = true;
     };
-
-    /* ---- input: touch ---- */
 
     let touchStartY = 0;
     let touchMode: "idle" | "ours" | "native" = "idle";
@@ -856,8 +795,6 @@ export default function LubricantHeroExperience() {
         handleIntent(dy > 0 ? 1 : -1, true);
       }
     };
-
-    /* ---- input: keyboard ---- */
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (
@@ -899,7 +836,6 @@ export default function LubricantHeroExperience() {
 
       if (!dir) return;
 
-      // space on a focused button should still press it
       if (event.key === " " && target?.tagName === "BUTTON") return;
 
       const result = handleIntent(dir, true);
@@ -911,8 +847,6 @@ export default function LubricantHeroExperience() {
     window.addEventListener("touchstart", onTouchStart, { passive: true });
     window.addEventListener("touchmove", onTouchMove, { passive: false });
     window.addEventListener("keydown", onKeyDown);
-
-    /* ---- title reveal (plays with the bottle intro) ---- */
 
     const titleTween = titleRef.current
       ? gsap.fromTo(
@@ -956,7 +890,7 @@ export default function LubricantHeroExperience() {
   return (
     <section
       ref={sectionRef}
-      className="relative h-screen w-full overflow-hidden bg-black text-white"
+      className="relative h-[100svh] w-full overflow-hidden bg-black text-white md:h-screen"
     >
       <div className="absolute inset-0 z-0">
         <LiquidEther
@@ -979,7 +913,7 @@ export default function LubricantHeroExperience() {
 
       <div
         ref={heroCopyRef}
-        className="pointer-events-none absolute left-0 top-[17%] z-20 flex w-full justify-center px-3 sm:top-[16%] sm:px-6"
+        className="pointer-events-none absolute left-0 top-[18%] z-20 flex w-full justify-center px-4 min-[480px]:top-[14%] sm:top-[16%] sm:px-6"
       >
         <div
           ref={titleRef}
@@ -993,8 +927,6 @@ export default function LubricantHeroExperience() {
           <span className="text-(--color-industrial-orange)"> MOVE </span>
         </div>
       </div>
-
-      {/* Blurred layer: bottles that are not in focus */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 z-[9]"
@@ -1023,8 +955,6 @@ export default function LubricantHeroExperience() {
           </Suspense>
         </Canvas>
       </div>
-
-      {/* Sharp layer: hero bottles + the bottle in focus */}
       <div className="pointer-events-none absolute inset-0 z-10">
         <Canvas
           dpr={[1, 1.6]}
@@ -1057,9 +987,9 @@ export default function LubricantHeroExperience() {
             ref={(element) => {
               panelRefs.current[index] = element;
             }}
-            className="absolute left-5 right-5 top-[59%] max-w-[520px] opacity-0 sm:left-auto sm:right-[7vw] sm:top-1/2 sm:w-[38vw] sm:-translate-y-1/2 lg:right-[9vw] lg:w-[34vw]"
+            className="absolute bottom-[max(1.25rem,env(safe-area-inset-bottom))] left-4 right-4 max-w-[520px] opacity-0 min-[480px]:left-5 min-[480px]:right-5 sm:bottom-auto sm:left-auto sm:right-[7vw] sm:top-1/2 sm:w-[38vw] sm:-translate-y-1/2 lg:right-[9vw] lg:w-[34vw]"
           >
-            <div className="mb-4 flex items-center gap-3">
+            <div className="mb-2.5 flex items-center gap-3 sm:mb-4">
               <div className="h-px w-10 bg-white" />
 
               <span className="text-[10px] font-bold uppercase tracking-[0.26em] text-white sm:text-xs">
@@ -1067,26 +997,26 @@ export default function LubricantHeroExperience() {
               </span>
             </div>
 
-            <h2 className="max-w-[600px] text-[clamp(2.4rem,5vw,5.7rem)] font-medium leading-[0.92] tracking-[-0.055em] text-(--color-industrial-orange)">
+            <h2 className="max-w-[600px] text-[clamp(2rem,10vw,2.8rem)] font-medium leading-[0.92] tracking-[-0.055em] text-(--color-industrial-orange) sm:text-[clamp(2.4rem,5vw,5.7rem)]">
               {product.name}
             </h2>
 
-            <p className="mt-5 max-w-[510px] text-sm leading-6 text-white/65 sm:text-base sm:leading-7 lg:text-lg lg:leading-8">
+            <p className="mt-3 max-w-[510px] text-[13px] leading-5 text-white/65 min-[480px]:text-sm min-[480px]:leading-6 sm:mt-5 sm:text-base sm:leading-7 lg:text-lg lg:leading-8">
               {product.description}
             </p>
 
-            <div className="mt-6 flex flex-wrap gap-2.5">
+            <div className="mt-4 flex flex-wrap gap-2 sm:mt-6 sm:gap-2.5">
               {product.specs.map((spec) => (
                 <span
                   key={spec}
-                  className="rounded-full border border-white/15 bg-white/[0.055] px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.1em] text-white/75 backdrop-blur-md sm:text-xs"
+                  className="rounded-full border border-white/15 bg-white/[0.055] px-2.5 py-1.5 text-[9px] font-medium uppercase tracking-[0.08em] text-white/75 backdrop-blur-md min-[480px]:px-3 min-[480px]:py-2 min-[480px]:text-[10px] sm:px-3.5 sm:text-xs"
                 >
                   {spec}
                 </span>
               ))}
             </div>
 
-            <div className="mt-7 h-[2px] w-full max-w-[380px] overflow-hidden rounded-full bg-white/10">
+            <div className="mt-4 h-[2px] w-full max-w-[380px] overflow-hidden rounded-full bg-white/10 sm:mt-7">
               <div
                 className="h-full bg-gradient-to-r from-[#FF9FFC] to-[#B497CF]"
                 style={{
@@ -1100,11 +1030,11 @@ export default function LubricantHeroExperience() {
 
       <div
         ref={scrollHintRef}
-        className="pointer-events-none absolute bottom-7 left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.3em] text-white/45 sm:bottom-9 sm:text-[10px]"
+        className="pointer-events-none absolute bottom-[max(1rem,env(safe-area-inset-bottom))] left-1/2 z-30 flex -translate-x-1/2 flex-col items-center gap-1.5 text-[8px] font-semibold uppercase tracking-[0.26em] text-white/45 sm:bottom-9 sm:gap-2 sm:text-[10px] sm:tracking-[0.3em]"
       >
         <span>Scroll to explore</span>
 
-        <div className="relative h-9 w-px overflow-hidden bg-white/15">
+        <div className="relative h-7 w-px overflow-hidden bg-white/15 sm:h-9">
           <div className="absolute left-0 top-0 h-4 w-px animate-[scrollLine_1.6s_ease-in-out_infinite] bg-white/70" />
         </div>
       </div>
